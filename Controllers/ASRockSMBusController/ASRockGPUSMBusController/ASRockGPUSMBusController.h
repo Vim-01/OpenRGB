@@ -22,8 +22,8 @@ typedef uint8_t asrock_gpu_dev_id;
 /*-----------------------------------------------------*\
 | ASRock GPU Speed and Brightness Constants             |
 \*-----------------------------------------------------*/
-#define ASROCK_GPU_SPEED_MIN            0x00
-#define ASROCK_GPU_SPEED_MAX            0xFF
+#define ASROCK_GPU_SPEED_MIN            0xFF
+#define ASROCK_GPU_SPEED_MAX            0x20
 #define ASROCK_GPU_SPEED_DEFAULT        0x80
 
 #define ASROCK_GPU_BRIGHTNESS_MIN       0x00
@@ -31,17 +31,18 @@ typedef uint8_t asrock_gpu_dev_id;
 #define ASROCK_GPU_BRIGHTNESS_DEFAULT   0xFF
 
 /*-----------------------------------------------------*\
-| ASRock GPU Channel Names (from SignalRGB)             |
+| ASRock GPU Channel Names (Verified on RX 7900 XTX)    |
 \*-----------------------------------------------------*/
 enum
 {
     ASROCK_GPU_CHANNEL_ARGB_HEADER      = 3,
     ASROCK_GPU_CHANNEL_TOP_SIDE         = 6,
     ASROCK_GPU_CHANNEL_FAN              = 7,
+    ASROCK_GPU_CHANNEL_BOTTOM_SHROUD    = 8,
 };
 
 /*-----------------------------------------------------*\
-| ASRock GPU Modes                                      |
+| ASRock GPU Modes (Verified on hardware)               |
 \*-----------------------------------------------------*/
 enum
 {
@@ -49,12 +50,11 @@ enum
     ASROCK_GPU_MODE_STATIC              = 0x01,
     ASROCK_GPU_MODE_BREATHING           = 0x02,
     ASROCK_GPU_MODE_STROBE              = 0x03,
-    ASROCK_GPU_MODE_SPECTRUM_CYCLE      = 0x04,
     ASROCK_GPU_MODE_RANDOM              = 0x05,
-    ASROCK_GPU_MODE_WAVE                = 0x07,
-    ASROCK_GPU_MODE_SPRING              = 0x09,
-    ASROCK_GPU_MODE_STACK               = 0x0B,
-    ASROCK_GPU_MODE_SCAN                = 0x0D,
+    ASROCK_GPU_MODE_SPECTRUM_CYCLE      = 0x07,
+    ASROCK_GPU_MODE_STACK               = 0x09,
+    ASROCK_GPU_MODE_SCAN                = 0x0B,
+    ASROCK_GPU_MODE_RAINBOW_WAVE        = 0x0D,
     ASROCK_GPU_MODE_RAINBOW             = 0x0E,
     ASROCK_GPU_MODE_DIRECT              = 0xE1,
 };
@@ -68,6 +68,7 @@ public:
     std::string GetDeviceLocation();
     std::string GetDeviceName();
 
+    void        SetDirectColor(uint8_t red, uint8_t green, uint8_t blue);
     void        SetChannelColor(uint8_t channel_idx, uint8_t red, uint8_t green, uint8_t blue);
     void        SetChannelMode(uint8_t channel_idx, uint8_t mode, uint8_t speed, uint8_t brightness, uint8_t red, uint8_t green, uint8_t blue);
     void        SaveConfig();

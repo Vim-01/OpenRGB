@@ -69,7 +69,17 @@ bool ASRockGPUSMBusController::WriteBlock(uint8_t command, uint8_t subcommand, c
     }
 
     int size   = 12;
-    int result = bus->i2c_write_block(dev, size, packet);
+    int result = -1;
+
+    for(int retry = 0; retry < 5; retry++)
+    {
+        result = bus->i2c_write_block(dev, size, packet);
+        if(result >= 0)
+        {
+            return(true);
+        }
+        std::this_thread::sleep_for(10ms);
+    }
 
     if(result < 0)
     {
@@ -164,6 +174,10 @@ bool ASRockGPUSMBusController::DetectChannels()
             {
                 name = "Fan";
             }
+            else if(i == ASROCK_GPU_CHANNEL_BOTTOM_SHROUD)
+            {
+                name = "Bottom Shroud";
+            }
 
             LOG_DEBUG("[ASRock GPU] Channel %d (%s) active with %d LEDs", i, name, response[4 + i]);
             num_channels++;
@@ -174,9 +188,33 @@ bool ASRockGPUSMBusController::DetectChannels()
     return(num_channels > 0);
 }
 
+void ASRockGPUSMBusController::SetDirectColor(uint8_t red, uint8_t green, uint8_t blue)
+{
+    /*-----------------------------------------------------*\
+    | Mode 0xE1 is an atomic global frame broadcast.        |
+    | Send channel 0x00 once to update all channels in ISR. |
+    \*-----------------------------------------------------*/
+    uint8_t data[8] =
+    {
+        ASROCK_GPU_MODE_DIRECT,
+        red,
+        green,
+        blue,
+        ASROCK_GPU_SPEED_DEFAULT,
+        ASROCK_GPU_BRIGHTNESS_DEFAULT,
+        0x00,
+        0x00
+    };
+
+    if(!WriteBlock(0x10, 0x00, data, sizeof(data)))
+    {
+        LOG_WARNING("[ASRock GPU] Failed to set direct color");
+    }
+}
+
 void ASRockGPUSMBusController::SetChannelColor(uint8_t channel_idx, uint8_t red, uint8_t green, uint8_t blue)
 {
-    SetChannelMode(channel_idx, ASROCK_GPU_MODE_DIRECT, ASROCK_GPU_SPEED_DEFAULT, ASROCK_GPU_BRIGHTNESS_DEFAULT, red, green, blue);
+    SetChannelMode(channel_idx, ASROCK_GPU_MODE_STATIC, ASROCK_GPU_SPEED_DEFAULT, ASROCK_GPU_BRIGHTNESS_DEFAULT, red, green, blue);
 }
 
 void ASRockGPUSMBusController::SetChannelMode(uint8_t channel_idx, uint8_t mode, uint8_t speed, uint8_t brightness, uint8_t red, uint8_t green, uint8_t blue)
